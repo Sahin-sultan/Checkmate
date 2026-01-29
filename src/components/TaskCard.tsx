@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Check, Zap } from "lucide-react";
+import { Check, Zap, Trash2 } from "lucide-react";
 import Confetti from "./Confetti";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { NeonCheckbox } from "@/components/ui/animated-check-box";
@@ -15,6 +15,7 @@ interface Task {
 interface TaskCardProps {
   tasks: Task[];
   onToggle: (id: string) => void;
+  onDelete?: (id: string) => void;
   delay?: number;
   fullWidth?: boolean;
 }
@@ -25,7 +26,7 @@ const priorityStyles = {
   low: "priority-low",
 };
 
-const TaskCard = ({ tasks, onToggle, delay = 0, fullWidth = false }: TaskCardProps) => {
+const TaskCard = ({ tasks, onToggle, onDelete, delay = 0, fullWidth = false }: TaskCardProps) => {
   const [confetti, setConfetti] = useState<{ x: number; y: number } | null>(null);
   const [celebratingId, setCelebratingId] = useState<string | null>(null);
 
@@ -80,6 +81,18 @@ const TaskCard = ({ tasks, onToggle, delay = 0, fullWidth = false }: TaskCardPro
                   Due: {task.dueTime}
                 </p>
               </div>
+              {onDelete && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(task.id);
+                  }}
+                  className="p-2 text-white/40 hover:text-red-500 transition-colors"
+                  title="Delete Task"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
             </div>
           ))}
         </div>

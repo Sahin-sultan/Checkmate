@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Check, Target } from "lucide-react";
+import { Check, Target, Trash2 } from "lucide-react";
 import Confetti from "./Confetti";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { NeonCheckbox } from "@/components/ui/animated-check-box";
@@ -14,11 +14,12 @@ interface Habit {
 interface HabitCardProps {
   habits: Habit[];
   onToggle: (id: string) => void;
+  onDelete?: (id: string) => void;
   delay?: number;
   fullWidth?: boolean;
 }
 
-const HabitCard = ({ habits, onToggle, delay = 0, fullWidth = false }: HabitCardProps) => {
+const HabitCard = ({ habits, onToggle, onDelete, delay = 0, fullWidth = false }: HabitCardProps) => {
   const [confetti, setConfetti] = useState<{ x: number; y: number } | null>(null);
   const [celebratingId, setCelebratingId] = useState<string | null>(null);
 
@@ -70,9 +71,23 @@ const HabitCard = ({ habits, onToggle, delay = 0, fullWidth = false }: HabitCard
                   {habit.name}
                 </p>
               </div>
-              <div className="flex items-center gap-1 rounded-full bg-background-tertiary px-3 py-1">
-                <span className="streak-fire">🔥</span>
-                <span className="font-mono text-sm text-foreground">{habit.streak}</span>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 rounded-full bg-background-tertiary px-3 py-1">
+                  <span className="streak-fire">🔥</span>
+                  <span className="font-mono text-sm text-foreground">{habit.streak}</span>
+                </div>
+                {onDelete && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(habit.id);
+                    }}
+                    className="p-2 text-white/40 hover:text-red-500 transition-colors"
+                    title="Delete Habit"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             </div>
           ))}

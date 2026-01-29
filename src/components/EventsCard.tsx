@@ -1,4 +1,4 @@
-import { Calendar } from "lucide-react";
+import { Calendar, Trash2 } from "lucide-react";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 
 interface Event {
@@ -10,11 +10,12 @@ interface Event {
 
 interface EventsCardProps {
   events: Event[];
+  onDelete?: (id: string) => void;
   delay?: number;
   fullWidth?: boolean;
 }
 
-const EventsCard = ({ events, delay = 0, fullWidth = false }: EventsCardProps) => {
+const EventsCard = ({ events, onDelete, delay = 0, fullWidth = false }: EventsCardProps) => {
   return (
     <div
       className={`card-earthy p-6 relative overflow-hidden ${fullWidth ? 'col-span-full' : ''}`}
@@ -39,11 +40,24 @@ const EventsCard = ({ events, delay = 0, fullWidth = false }: EventsCardProps) =
           {events.map((event) => (
             <div
               key={event.id}
-              className="rounded-lg border border-white/5 p-4 transition-all duration-300 hover:translate-x-1 hover:bg-white/5"
+              className="rounded-lg border border-white/5 p-4 transition-all duration-300 hover:translate-x-1 hover:bg-white/5 group relative"
             >
-              <p className="font-body text-base font-medium text-card-foreground">
-                {event.name}
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="font-body text-base font-medium text-card-foreground">
+                  {event.name}
+                </p>
+                {onDelete && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(event.id);
+                    }}
+                    className="text-white/40 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
               <p className="font-mono text-xs text-card-foreground/70">
                 {event.date}{event.time ? ` at ${event.time}` : ""}
               </p>

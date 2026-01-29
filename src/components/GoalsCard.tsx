@@ -1,4 +1,4 @@
-import { Goal } from "lucide-react";
+import { Goal, Trash2 } from "lucide-react";
 
 
 interface GoalItem {
@@ -11,10 +11,11 @@ interface GoalItem {
 
 interface GoalsCardProps {
   goals: GoalItem[];
+  onDelete?: (id: string) => void;
   delay?: number;
 }
 
-const GoalsCard = ({ goals, delay = 0 }: GoalsCardProps) => {
+const GoalsCard = ({ goals, onDelete, delay = 0 }: GoalsCardProps) => {
   return (
     <div
       className="card-earthy col-span-full p-6"
@@ -30,15 +31,28 @@ const GoalsCard = ({ goals, delay = 0 }: GoalsCardProps) => {
         {goals.map((goal) => (
           <div
             key={goal.id}
-            className="rounded-lg border border-white/5 p-4 transition-all duration-300 hover:bg-white/5"
+            className="rounded-lg border border-white/5 p-4 transition-all duration-300 hover:bg-white/5 relative group"
           >
             <div className="mb-2 flex items-center justify-between">
               <p className="font-body text-base font-medium text-card-foreground">
                 {goal.name}
               </p>
-              <span className="font-mono text-sm text-primary">
-                {goal.progress}%
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-sm text-primary">
+                  {goal.progress}%
+                </span>
+                {onDelete && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(goal.id);
+                    }}
+                    className="text-white/40 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
             </div>
             <p className="mb-3 font-mono text-xs text-card-foreground/70">
               {goal.current ? `${goal.current} • ` : ""}{goal.target}

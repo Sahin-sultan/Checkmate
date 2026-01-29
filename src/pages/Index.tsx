@@ -2,37 +2,74 @@ import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "@/components/Header";
 import { NavBar } from "@/components/ui/tubelight-navbar";
-import { LayoutDashboard, Target, CheckSquare, Goal, Calendar, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Target, CheckSquare, Goal, Calendar, BarChart3, Wallet } from "lucide-react";
 import DashboardTab from "@/components/tabs/DashboardTab";
 import HabitsTab from "@/components/tabs/HabitsTab";
 import TasksTab from "@/components/tabs/TasksTab";
 import GoalsTab from "@/components/tabs/GoalsTab";
 import CalendarTab from "@/components/tabs/CalendarTab";
 import StatsTab from "@/components/tabs/StatsTab";
+import FinanceTab, { Transaction } from "@/components/tabs/FinanceTab";
 import { GlowCard } from "@/components/ui/spotlight-card";
 
+interface Habit {
+  id: string;
+  name: string;
+  streak: number;
+  completed: boolean;
+}
+
+interface Task {
+  id: string;
+  name: string;
+  dueTime: string;
+  priority: "high" | "medium" | "low";
+  completed: boolean;
+}
+
+interface Goal {
+  id: string;
+  name: string;
+  target: string;
+  progress: number;
+  current?: string;
+}
+
+interface Event {
+  id: string;
+  name: string;
+  date: string;
+  time?: string;
+}
+
+interface User {
+  name: string;
+  email: string;
+  avatar?: string;
+}
+
 // Initial data
-const initialHabits = [
+const initialHabits: Habit[] = [
   { id: "1", name: "Morning Exercise", streak: 7, completed: false },
   { id: "2", name: "Read for 30 minutes", streak: 14, completed: true },
   { id: "3", name: "Meditate", streak: 3, completed: false },
   { id: "4", name: "Drink 8 glasses of water", streak: 21, completed: false },
 ];
 
-const initialTasks = [
-  { id: "1", name: "Finish project proposal", dueTime: "2:00 PM", priority: "high" as const, completed: false },
-  { id: "2", name: "Team meeting preparation", dueTime: "4:00 PM", priority: "medium" as const, completed: false },
-  { id: "3", name: "Email responses", dueTime: "6:00 PM", priority: "low" as const, completed: false },
+const initialTasks: Task[] = [
+  { id: "1", name: "Finish project proposal", dueTime: "2:00 PM", priority: "high", completed: false },
+  { id: "2", name: "Team meeting preparation", dueTime: "4:00 PM", priority: "medium", completed: false },
+  { id: "3", name: "Email responses", dueTime: "6:00 PM", priority: "low", completed: false },
 ];
 
-const initialEvents = [
+const initialEvents: Event[] = [
   { id: "1", name: "Mom's Birthday", date: "January 30, 2026" },
   { id: "2", name: "Dentist Appointment", date: "January 28, 2026", time: "10:00 AM" },
   { id: "3", name: "Project Deadline", date: "February 1, 2026" },
   { id: "4", name: "Annual Review Meeting", date: "February 15, 2026" },
 ];
 
-const initialGoals = [
+const initialGoals: Goal[] = [
   { id: "1", name: "Learn Web Development", target: "3 months target", progress: 45 },
   { id: "2", name: "Read 24 books this year", target: "24 books", progress: 33, current: "8 of 24 complete" },
   { id: "3", name: "Run a 5K marathon", target: "2 months target", progress: 60 },
@@ -44,13 +81,18 @@ const navItems = [
   { id: "tasks", name: "Tasks", url: "#", icon: CheckSquare },
   { id: "goals", name: "Goals", url: "#", icon: Goal },
   { id: "calendar", name: "Calendar", url: "#", icon: Calendar },
+  { id: "finance", name: "Finance", url: "#", icon: Wallet },
   { id: "stats", name: "Stats", url: "#", icon: BarChart3 },
 ];
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [habits, setHabits] = useState(initialHabits);
-  const [tasks, setTasks] = useState(initialTasks);
+  const [activeTab, setActiveTab] = useState(() => localStorage.getItem("checkmate-active-tab") || "dashboard");
+  const [habits, setHabits] = useState<Habit[]>(initialHabits);
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [goals, setGoals] = useState<Goal[]>(initialGoals);
+  const [events, setEvents] = useState<Event[]>(initialEvents);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [user, setUser] = useState<User | null>(null);
   const [tasksCompletedToday, setTasksCompletedToday] = useState(12);
 
   // Load from localStorage
@@ -62,7 +104,22 @@ const Index = () => {
     if (savedHabits) setHabits(JSON.parse(savedHabits));
     if (savedTasks) setTasks(JSON.parse(savedTasks));
     if (savedTasksCompleted) setTasksCompletedToday(JSON.parse(savedTasksCompleted));
+
+    const savedGoals = localStorage.getItem("checkmate-goals");
+    const savedEvents = localStorage.getItem("checkmate-events");
+    const savedTransactions = localStorage.getItem("checkmate-transactions");
+    const savedUser = localStorage.getItem("checkmate-user");
+
+    if (savedGoals) setGoals(JSON.parse(savedGoals));
+    if (savedEvents) setEvents(JSON.parse(savedEvents));
+    if (savedTransactions) setTransactions(JSON.parse(savedTransactions));
+    if (savedUser) setUser(JSON.parse(savedUser));
   }, []);
+
+  // Save activeTab to localStorage
+  useEffect(() => {
+    localStorage.setItem("checkmate-active-tab", activeTab);
+  }, [activeTab]);
 
   // Save to localStorage
   useEffect(() => {
@@ -77,12 +134,92 @@ const Index = () => {
     localStorage.setItem("checkmate-tasks-completed", JSON.stringify(tasksCompletedToday));
   }, [tasksCompletedToday]);
 
+  useEffect(() => {
+    localStorage.setItem("checkmate-goals", JSON.stringify(goals));
+  }, [goals]);
+
+  useEffect(() => {
+    localStorage.setItem("checkmate-events", JSON.stringify(events));
+  }, [events]);
+
+  useEffect(() => {
+    localStorage.setItem("checkmate-transactions", JSON.stringify(transactions));
+  }, [transactions]);
+
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("checkmate-user", JSON.stringify(user));
+    } else {
+      localStorage.removeItem("checkmate-user");
+    }
+  }, [user]);
+
+  const handleLogin = (newUser: { name: string; email: string }) => {
+    setUser(newUser);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+  };
+
+  const handleAddTransaction = (transaction: Omit<Transaction, "id">) => {
+    const newTransaction = {
+      id: Date.now().toString(),
+      ...transaction,
+    };
+    setTransactions((prev) => [...prev, newTransaction]);
+  };
+
+  const handleDeleteTransaction = (id: string) => {
+    setTransactions((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const handleAddHabit = (name: string) => {
+    const newHabit = {
+      id: Date.now().toString(),
+      name,
+      streak: 0,
+      completed: false,
+    };
+    setHabits((prev) => [...prev, newHabit]);
+  };
+
+  const handleAddTask = (task: Omit<typeof initialTasks[0], "id" | "completed">) => {
+    const newTask = {
+      id: Date.now().toString(),
+      completed: false,
+      ...task,
+    };
+    setTasks((prev) => [...prev, newTask]);
+  };
+
+  const handleAddGoal = (goal: Omit<typeof initialGoals[0], "id" | "progress">) => {
+    const newGoal = {
+      id: Date.now().toString(),
+      progress: 0,
+      ...goal,
+    };
+    setGoals((prev) => [...prev, newGoal]);
+  };
+
+  const handleAddEvent = (event: Omit<typeof initialEvents[0], "id">) => {
+    const newEvent = {
+      id: Date.now().toString(),
+      ...event,
+    };
+    setEvents((prev) => [...prev, newEvent]);
+  };
+
   const handleToggleHabit = useCallback((id: string) => {
     setHabits((prev) =>
       prev.map((habit) =>
         habit.id === id ? { ...habit, completed: !habit.completed } : habit
       )
     );
+  }, []);
+
+  const handleDeleteHabit = useCallback((id: string) => {
+    setHabits((prev) => prev.filter((habit) => habit.id !== id));
   }, []);
 
   const handleToggleTask = useCallback((id: string) => {
@@ -103,6 +240,18 @@ const Index = () => {
     });
   }, []);
 
+  const handleDeleteTask = useCallback((id: string) => {
+    setTasks((prev) => prev.filter((task) => task.id !== id));
+  }, []);
+
+  const handleDeleteGoal = useCallback((id: string) => {
+    setGoals((prev) => prev.filter((goal) => goal.id !== id));
+  }, []);
+
+  const handleDeleteEvent = useCallback((id: string) => {
+    setEvents((prev) => prev.filter((event) => event.id !== id));
+  }, []);
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "dashboard":
@@ -110,7 +259,7 @@ const Index = () => {
           <DashboardTab
             habits={habits}
             tasks={tasks}
-            events={initialEvents}
+            events={events} // Use state events here
             streak={7}
             tasksCompletedToday={tasksCompletedToday}
             punctualityScore={85}
@@ -119,13 +268,21 @@ const Index = () => {
           />
         );
       case "habits":
-        return <HabitsTab habits={habits} onToggle={handleToggleHabit} />;
+        return <HabitsTab habits={habits} onToggle={handleToggleHabit} onAdd={handleAddHabit} onDelete={handleDeleteHabit} />;
       case "tasks":
-        return <TasksTab tasks={tasks} onToggle={handleToggleTask} />;
+        return <TasksTab tasks={tasks} onToggle={handleToggleTask} onAdd={handleAddTask} onDelete={handleDeleteTask} />;
       case "goals":
-        return <GoalsTab goals={initialGoals} />;
+        return <GoalsTab goals={goals} onAdd={handleAddGoal} onDelete={handleDeleteGoal} />;
       case "calendar":
-        return <CalendarTab events={initialEvents} />;
+        return <CalendarTab events={events} onAdd={handleAddEvent} onDelete={handleDeleteEvent} />;
+      case "finance":
+        return (
+          <FinanceTab
+            transactions={transactions}
+            onAddTransaction={handleAddTransaction}
+            onDeleteTransaction={handleDeleteTransaction}
+          />
+        );
       case "stats":
         return (
           <StatsTab
@@ -146,7 +303,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen pb-24">
-      <Header activeTab={activeTab} onTabChange={setActiveTab} />
+      <Header activeTab={activeTab} onTabChange={setActiveTab} user={user} onLogin={handleLogin} onLogout={handleLogout} />
 
       {/* Replaced Navigation with NavBar */}
       <NavBar
@@ -167,8 +324,9 @@ const Index = () => {
                 activeTab === 'tasks' ? 'hsl(160 60% 60% / 0.2)' :     // Pastel Mint
                   activeTab === 'goals' ? 'hsl(40 95% 55% / 0.2)' :      // Warning/Gold
                     activeTab === 'calendar' ? 'hsl(200 80% 65% / 0.2)' :  // Pastel Blue
-                      activeTab === 'stats' ? 'hsl(270 70% 70% / 0.2)' :     // Pastel Purple
-                        'rgba(255, 255, 255, 0.1)'
+                      activeTab === 'finance' ? 'hsl(142 70% 50% / 0.2)' :   // Emerald Green
+                        activeTab === 'stats' ? 'hsl(270 70% 70% / 0.2)' :     // Pastel Purple
+                          'rgba(255, 255, 255, 0.1)'
           }
         >
           <div className="min-h-[400px]">

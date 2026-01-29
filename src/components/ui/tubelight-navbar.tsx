@@ -56,8 +56,8 @@ export function NavBar({ items, className, activeTab, onTabChange }: NavBarProps
                             key={item.name}
                             onClick={() => onTabChange(item.id)}
                             className={cn(
-                                "relative cursor-pointer text-sm font-semibold px-2 sm:px-6 py-2 rounded-full transition-colors duration-500",
-                                "text-foreground/80 hover:text-primary",
+                                "relative cursor-pointer text-base font-semibold px-2 sm:px-6 py-2 rounded-full transition-colors duration-500",
+                                "text-white hover:text-primary",
                                 isActive && "bg-white/10 text-primary",
                             )}
                         >

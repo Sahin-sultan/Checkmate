@@ -1,11 +1,54 @@
 import { LiveClock } from "@/components/ui/LiveClock";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User, LogOut, Settings, LogIn } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 interface HeaderProps {
   activeTab?: string;
   onTabChange?: (tab: string) => void;
+  user?: { name: string; email: string; avatar?: string } | null;
+  onLogin?: (user: { name: string; email: string }) => void;
+  onLogout?: () => void;
 }
 
-const Header = ({ activeTab, onTabChange }: HeaderProps) => {
+const Header = ({ activeTab, onTabChange, user, onLogin, onLogout }: HeaderProps) => {
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
+
+  const [showUserIcon, setShowUserIcon] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowUserIcon(true);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (onLogin) {
+      // Mock login - in a real app, validate credentials here
+      onLogin({
+        name: name || email.split("@")[0],
+        email,
+      });
+      setIsLoginOpen(false);
+    }
+  };
+
   return (
     <header className="animate-slide-down flex items-center justify-between px-6 py-6 md:px-12">
       <div className="flex items-center gap-4">
@@ -30,19 +73,65 @@ const Header = ({ activeTab, onTabChange }: HeaderProps) => {
         </div>
       </div>
 
-      {/* Live Clock */}
-      <div className="hidden md:block">
-        <LiveClock />
-      </div>
+      {/* Right Side Actions */}
+      <div className="flex items-center gap-4">
+        {/* Live Clock - Hidden on small screens if needed, but keeping consistent */}
+        <div className="hidden md:block">
+          <LiveClock />
+        </div>
 
-      {/* Date Display (Hidden on md if Navigation pushes it, or kept? Let's hide it for now to avoid clutter, or maybe show on XL?) 
-          The user asked to add the section (Nav), presumably effectively replacing the simple date or being the main focus.
-      */}
-      {/* <div className="hidden rounded-full bg-background-secondary px-5 py-2.5 md:block">
-        <span className="font-mono text-sm text-foreground-secondary">
-          {format(today, "EEEE, MMMM d, yyyy")}
-        </span>
-      </div> */}
+        {/* User Profile / Login */}
+        {user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                <Avatar className="h-10 w-10 border border-white/10">
+                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarFallback className="bg-purple-600 text-white">
+                    {user.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 bg-zinc-950 border-white/10 text-white" align="end">
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">{user.name}</p>
+                  <p className="text-xs leading-none text-zinc-400">{user.email}</p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-white/10" />
+              <DropdownMenuItem className="focus:bg-zinc-900 focus:text-white cursor-pointer">
+                <User className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="focus:bg-zinc-900 focus:text-white cursor-pointer">
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-white/10" />
+              <DropdownMenuItem
+                className="text-red-500 focus:bg-zinc-900 focus:text-red-500 cursor-pointer"
+                onClick={onLogout}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Link to="/login">
+            <Button variant="ghost" className="text-foreground hover:bg-white/5 gap-2 transition-all duration-300">
+              {showUserIcon ? (
+                <img src="https://res.cloudinary.com/ddzreu2to/image/upload/v1769710692/user_xtrwmv.gif" alt="User" className="h-8 w-8 -ml-1" />
+              ) : (
+                <LogIn className="h-4 w-4" />
+              )}
+              <span className="hidden sm:inline">Sign In</span>
+            </Button>
+          </Link>
+        )}
+      </div>
     </header>
   );
 };

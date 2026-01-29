@@ -3,6 +3,7 @@ import StatsCard from "../StatsCard";
 import HabitCard from "../HabitCard";
 import TaskCard from "../TaskCard";
 import EventsCard from "../EventsCard";
+import DailyCheckmate from "../DailyCheckmate";
 
 interface Habit {
   id: string;
@@ -77,6 +78,11 @@ const DashboardTab = ({
       animate="show"
       className="space-y-8"
     >
+      {/* Daily Review CTA */}
+      <motion.div variants={item}>
+        <DailyCheckmate tasks={tasks} habits={habits} />
+      </motion.div>
+
       {/* Stats Row */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <motion.div variants={item} className="h-full">
