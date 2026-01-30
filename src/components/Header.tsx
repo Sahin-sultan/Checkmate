@@ -20,9 +20,10 @@ interface HeaderProps {
   user?: { name: string; email: string; avatar?: string } | null;
   onLogin?: (user: { name: string; email: string }) => void;
   onLogout?: () => void;
+  syncStatus?: 'synced' | 'syncing' | 'error' | 'offline';
 }
 
-const Header = ({ activeTab, onTabChange, user, onLogout }: HeaderProps) => {
+const Header = ({ activeTab, onTabChange, user, onLogout, syncStatus = 'synced' }: HeaderProps) => {
   const [showUserIcon, setShowUserIcon] = useState(false);
 
   useEffect(() => {
@@ -58,6 +59,15 @@ const Header = ({ activeTab, onTabChange, user, onLogout }: HeaderProps) => {
 
       {/* Right Side Actions */}
       <div className="flex items-center gap-4">
+        {/* Sync Status Indicator */}
+        {user && (
+          <div className="hidden sm:flex items-center gap-2">
+            {syncStatus === 'synced' && <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" title="Data Synced to Cloud" />}
+            {syncStatus === 'syncing' && <div className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse" title="Syncing..." />}
+            {syncStatus === 'error' && <div className="h-2 w-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]" title="Sync Error - Check Connection" />}
+          </div>
+        )}
+
         {/* Live Clock - Hidden on small screens if needed, but keeping consistent */}
         <div className="hidden md:block">
           <LiveClock />
