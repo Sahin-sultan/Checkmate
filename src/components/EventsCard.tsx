@@ -1,5 +1,6 @@
-import { Calendar, Trash2 } from "lucide-react";
+import { Calendar, Trash2, CalendarPlus } from "lucide-react";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
+import { downloadICS } from "@/utils/calendarUtils";
 
 interface Event {
   id: string;
@@ -47,15 +48,32 @@ const EventsCard = ({ events, onDelete, delay = 0, fullWidth = false }: EventsCa
                   {event.name}
                 </p>
                 {onDelete && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete(event.id);
-                    }}
-                    className="text-white/40 hover:text-red-500 transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        downloadICS({
+                          name: event.name,
+                          date: event.date,
+                          time: event.time
+                        });
+                      }}
+                      className="text-white/40 hover:text-blue-400 transition-colors"
+                      title="Add to Calendar"
+                    >
+                      <CalendarPlus className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete(event.id);
+                      }}
+                      className="text-white/40 hover:text-red-500 transition-colors"
+                      title="Delete Event"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 )}
               </div>
               <p className="font-mono text-xs text-card-foreground/70">
