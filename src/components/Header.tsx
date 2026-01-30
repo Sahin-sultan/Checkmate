@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, LogOut, Settings, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 interface HeaderProps {
   activeTab?: string;
@@ -21,13 +22,7 @@ interface HeaderProps {
   onLogout?: () => void;
 }
 
-const Header = ({ activeTab, onTabChange, user, onLogin, onLogout }: HeaderProps) => {
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
-
+const Header = ({ activeTab, onTabChange, user, onLogout }: HeaderProps) => {
   const [showUserIcon, setShowUserIcon] = useState(false);
 
   useEffect(() => {
@@ -36,18 +31,6 @@ const Header = ({ activeTab, onTabChange, user, onLogin, onLogout }: HeaderProps
     }, 2000);
     return () => clearTimeout(timer);
   }, []);
-
-  const handleLoginSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (onLogin) {
-      // Mock login - in a real app, validate credentials here
-      onLogin({
-        name: name || email.split("@")[0],
-        email,
-      });
-      setIsLoginOpen(false);
-    }
-  };
 
   return (
     <header className="animate-slide-down flex items-center justify-between px-6 py-6 md:px-12">
@@ -101,14 +84,12 @@ const Header = ({ activeTab, onTabChange, user, onLogin, onLogout }: HeaderProps
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-white/10" />
-              <DropdownMenuItem className="focus:bg-zinc-900 focus:text-white cursor-pointer">
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="focus:bg-zinc-900 focus:text-white cursor-pointer">
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </DropdownMenuItem>
+              <Link to="/profile">
+                <DropdownMenuItem className="focus:bg-zinc-900 focus:text-white cursor-pointer">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+              </Link>
               <DropdownMenuSeparator className="bg-white/10" />
               <DropdownMenuItem
                 className="text-red-500 focus:bg-zinc-900 focus:text-red-500 cursor-pointer"

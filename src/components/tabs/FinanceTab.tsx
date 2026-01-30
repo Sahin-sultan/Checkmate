@@ -153,6 +153,82 @@ const FinanceTab = ({ transactions, onAddTransaction, onDeleteTransaction }: Fin
             animate="show"
             className="space-y-6"
         >
+            <div className="flex items-center justify-between px-1">
+                <h2 className="text-xl font-bold text-white">Finance Overview</h2>
+                <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                    <DialogTrigger asChild>
+                        <Button className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-900/20">
+                            <Plus className="mr-2 h-4 w-4" /> Add Transaction
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md bg-zinc-950 border-zinc-800 text-white">
+                        <DialogHeader>
+                            <DialogTitle>Add Transaction</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Type</Label>
+                                <Select
+                                    value={type}
+                                    onValueChange={(val: "expense" | "income") => setType(val)}
+                                >
+                                    <SelectTrigger className="bg-zinc-900 border-zinc-800">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                                        <SelectItem value="expense">Expense</SelectItem>
+                                        <SelectItem value="income">Income</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Amount</Label>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    value={amount}
+                                    onChange={(e) => setAmount(e.target.value)}
+                                    placeholder="0.00"
+                                    className="bg-zinc-900 border-zinc-800"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Category</Label>
+                                <Select value={category} onValueChange={setCategory}>
+                                    <SelectTrigger className="bg-zinc-900 border-zinc-800">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
+                                        <SelectItem value="Food">Food</SelectItem>
+                                        <SelectItem value="Transport">Transport</SelectItem>
+                                        <SelectItem value="Utilities">Utilities</SelectItem>
+                                        <SelectItem value="Entertainment">Entertainment</SelectItem>
+                                        <SelectItem value="Shopping">Shopping</SelectItem>
+                                        <SelectItem value="Health">Health</SelectItem>
+                                        <SelectItem value="Salary">Salary</SelectItem>
+                                        <SelectItem value="Other">Other</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Description</Label>
+                                <Input
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    placeholder="e.g., Grocery Shopping"
+                                    className="bg-zinc-900 border-zinc-800"
+                                />
+                            </div>
+                            <DialogFooter>
+                                <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                                    Add Transaction
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+            </div>
+
             {/* Summary Cards */}
             <motion.div variants={item} className="grid gap-4 md:grid-cols-3">
                 <div className="card-earthy">
@@ -253,78 +329,6 @@ const FinanceTab = ({ transactions, onAddTransaction, onDeleteTransaction }: Fin
                     <div className="card-earthy h-full">
                         <div className="flex flex-row items-center justify-between p-6">
                             <h3 className="text-white">Recent Transactions</h3>
-                            <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                                <DialogTrigger asChild>
-                                    <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                                        <Plus className="mr-2 h-4 w-4" /> Add
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent className="sm:max-w-md bg-zinc-950 border-zinc-800 text-white">
-                                    <DialogHeader>
-                                        <DialogTitle>Add Transaction</DialogTitle>
-                                    </DialogHeader>
-                                    <form onSubmit={handleSubmit} className="space-y-4">
-                                        <div className="space-y-2">
-                                            <Label>Type</Label>
-                                            <Select
-                                                value={type}
-                                                onValueChange={(val: "expense" | "income") => setType(val)}
-                                            >
-                                                <SelectTrigger className="bg-zinc-900 border-zinc-800">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
-                                                    <SelectItem value="expense">Expense</SelectItem>
-                                                    <SelectItem value="income">Income</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Amount</Label>
-                                            <Input
-                                                type="number"
-                                                step="0.01"
-                                                value={amount}
-                                                onChange={(e) => setAmount(e.target.value)}
-                                                placeholder="0.00"
-                                                className="bg-zinc-900 border-zinc-800"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Category</Label>
-                                            <Select value={category} onValueChange={setCategory}>
-                                                <SelectTrigger className="bg-zinc-900 border-zinc-800">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent className="bg-zinc-900 border-zinc-800 text-white">
-                                                    <SelectItem value="Food">Food</SelectItem>
-                                                    <SelectItem value="Transport">Transport</SelectItem>
-                                                    <SelectItem value="Utilities">Utilities</SelectItem>
-                                                    <SelectItem value="Entertainment">Entertainment</SelectItem>
-                                                    <SelectItem value="Shopping">Shopping</SelectItem>
-                                                    <SelectItem value="Health">Health</SelectItem>
-                                                    <SelectItem value="Salary">Salary</SelectItem>
-                                                    <SelectItem value="Other">Other</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Description</Label>
-                                            <Input
-                                                value={description}
-                                                onChange={(e) => setDescription(e.target.value)}
-                                                placeholder="e.g., Grocery Shopping"
-                                                className="bg-zinc-900 border-zinc-800"
-                                            />
-                                        </div>
-                                        <DialogFooter>
-                                            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                                                Add Transaction
-                                            </Button>
-                                        </DialogFooter>
-                                    </form>
-                                </DialogContent>
-                            </Dialog>
                         </div>
                         <div className="p-6 pt-0">
                             <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
