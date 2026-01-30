@@ -143,15 +143,15 @@ const Index = () => {
           if (data.transactions) setTransactions(data.transactions);
           if (data.tasksCompletedToday) setTasksCompletedToday(data.tasksCompletedToday);
 
-          toast.success("Data synced from cloud");
+          toast.success(`Welcome back! workspace loaded.`);
         } else {
           // New user or no data yet - keep current state but mark as loaded
-          setIsDataLoaded(true);
+          toast.info("Welcome! Starting a fresh workspace.");
         }
         setIsDataLoaded(true);
       } catch (error) {
         console.error("Error loading user data:", error);
-        toast.error("Failed to sync data");
+        toast.error("Failed to load your data");
         setIsDataLoaded(true); // Allow editing even if sync fails
       }
     };
