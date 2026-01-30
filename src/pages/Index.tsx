@@ -101,6 +101,7 @@ const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [tasksCompletedToday, setTasksCompletedToday] = useState(12);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'error' | 'offline'>('synced');
 
   // Initialize notification system
   useNotificationSystem(tasks, events);
@@ -130,6 +131,8 @@ const Index = () => {
     const loadUserData = async () => {
       if (!user?.uid) return;
 
+      setSyncStatus('syncing');
+
       try {
         const docRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(docRef);
@@ -149,10 +152,12 @@ const Index = () => {
           toast.info("Welcome! Starting a fresh workspace.");
         }
         setIsDataLoaded(true);
+        setSyncStatus('synced');
       } catch (error) {
         console.error("Error loading user data:", error);
-        toast.error("Failed to load your data");
+        toast.error("Failed to load your data. Check connection.");
         setIsDataLoaded(true); // Allow editing even if sync fails
+        setSyncStatus('error');
       }
     };
 
@@ -431,7 +436,13 @@ const Index = () => {
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      <Header activeTab={activeTab} onTabChange={setActiveTab} user={user} onLogout={handleLogout} />
+      <Header
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        user={user}
+        onLogout={handleLogout}
+        syncStatus={syncStatus}
+      />
 
       {/* Replaced Navigation with NavBar */}
       <NavBar
