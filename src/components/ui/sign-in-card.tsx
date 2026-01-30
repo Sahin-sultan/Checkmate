@@ -8,6 +8,8 @@ import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
     GoogleAuthProvider,
     updateProfile
 } from "firebase/auth";
@@ -38,6 +40,22 @@ export function SignInCard() {
     useEffect(() => {
         setIsSignUp(location.pathname === '/signup');
     }, [location.pathname]);
+
+    // Check for redirect result (mobile auth flow)
+    useEffect(() => {
+        const checkRedirect = async () => {
+            try {
+                const result = await getRedirectResult(auth);
+                if (result) {
+                    toast.success("Signed in with Google successfully!");
+                    navigate("/");
+                }
+            } catch (error) {
+                console.error("Redirect auth error", error);
+            }
+        };
+        checkRedirect();
+    }, [navigate]);
 
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
@@ -100,12 +118,29 @@ export function SignInCard() {
         setIsLoading(true);
         try {
             const provider = new GoogleAuthProvider();
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+            if (isMobile) {
+                await signInWithRedirect(auth, provider);
+                return; // Redirecting...
+            }
+
             await signInWithPopup(auth, provider);
             toast.success("Signed in with Google successfully!");
             navigate("/");
         } catch (error: any) {
             console.error(error);
-            toast.error("Failed to sign in with Google.");
+            if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
+                // Fallback to redirect if popup fails
+                try {
+                    const provider = new GoogleAuthProvider();
+                    await signInWithRedirect(auth, provider);
+                } catch (e) {
+                    toast.error("Failed to sign in with Google.");
+                }
+            } else {
+                toast.error("Failed to sign in with Google.");
+            }
         } finally {
             setIsLoading(false);
         }
