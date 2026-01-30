@@ -85,9 +85,13 @@
   }
 
   body {
-    @apply bg-transparent text-foreground font-body antialiased;
+    @apply bg-background text-foreground font-body antialiased;
+    background-color: #000;
+    /* Fallback for overscroll */
     min-height: 100vh;
     position: relative;
+    overscroll-behavior-y: none;
+    /* Prevents "pull down to refresh" style bounce showing white */
   }
 
   /* Removed body::before background gradients to allow GridBackground to show */
