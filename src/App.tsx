@@ -14,6 +14,8 @@ const queryClient = new QueryClient();
 import { GridBackground } from "@/components/ui/grid-background";
 import { IntroAnimation } from "@/components/intro/IntroAnimation";
 
+import { InstallPrompt } from "@/components/InstallPrompt";
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -23,6 +25,7 @@ const App = () => (
         <div className="relative z-10">
           <Toaster />
           <Sonner position="top-center" />
+          <InstallPrompt />
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
