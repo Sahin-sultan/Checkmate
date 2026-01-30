@@ -130,25 +130,19 @@ export function SignInCard() {
         setIsLoading(true);
         try {
             const provider = new GoogleAuthProvider();
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-            if (isMobile) {
-                await signInWithRedirect(auth, provider);
-                return; // Redirecting...
-            }
-
+            // Try Popup first for all devices (modern mobile browsers support it better than Redirect flow for SPAs)
             await signInWithPopup(auth, provider);
             toast.success("Signed in with Google successfully!");
-            navigate("/");
+            // Navigation handled by onAuthStateChanged
         } catch (error: any) {
             console.error(error);
-            if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
+            if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
                 // Fallback to redirect if popup fails
                 try {
                     const provider = new GoogleAuthProvider();
                     await signInWithRedirect(auth, provider);
                 } catch (e) {
-                    toast.error("Failed to sign in with Google.");
+                    toast.error("Failed to sign in. Please try again.");
                 }
             } else {
                 toast.error("Failed to sign in with Google.");
