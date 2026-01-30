@@ -19,7 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TimePicker } from "@/components/ui/time-picker";
 import { useState } from "react";
 
 interface Task {
@@ -60,9 +59,20 @@ const item = {
   }
 };
 
+const formatTime12h = (time24: string) => {
+  if (!time24) return "";
+  const [hours, minutes] = time24.split(":");
+  let h = parseInt(hours, 10);
+  const m = parseInt(minutes, 10);
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12;
+  h = h ? h : 12; // the hour '0' should be '12'
+  return `${h}:${m.toString().padStart(2, "0")} ${ampm}`;
+};
+
 const TasksTab = ({ tasks, onToggle, onAdd, onDelete }: TasksTabProps) => {
   const [newTaskName, setNewTaskName] = useState("");
-  const [dueTime, setDueTime] = useState("12:00 PM");
+  const [dueTime, setDueTime] = useState("12:00"); // 24h format for input
   const [priority, setPriority] = useState<"high" | "medium" | "low">("medium");
   const [isOpen, setIsOpen] = useState(false);
 
@@ -71,11 +81,11 @@ const TasksTab = ({ tasks, onToggle, onAdd, onDelete }: TasksTabProps) => {
     if (newTaskName.trim() && dueTime.trim()) {
       onAdd({
         name: newTaskName,
-        dueTime,
+        dueTime: formatTime12h(dueTime),
         priority,
       });
       setNewTaskName("");
-      setDueTime("12:00 PM");
+      setDueTime("12:00");
       setPriority("medium");
       setIsOpen(false);
     }
@@ -119,9 +129,12 @@ const TasksTab = ({ tasks, onToggle, onAdd, onDelete }: TasksTabProps) => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="due-time">Due Time</Label>
-                  <TimePicker
+                  <input
+                    type="time"
+                    id="due-time"
                     value={dueTime}
-                    onChange={(t) => setDueTime(t)}
+                    onChange={(e) => setDueTime(e.target.value)}
+                    className="bg-zinc-900 border border-white/10 text-white w-full h-10 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                   />
                 </div>
                 <div className="space-y-2">
