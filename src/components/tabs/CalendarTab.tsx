@@ -12,7 +12,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { TimePicker } from "@/components/ui/time-picker";
 import { useState } from "react";
 
 interface Event {
@@ -51,10 +50,21 @@ const item = {
   }
 };
 
+const formatTime12h = (time24: string) => {
+  if (!time24) return "";
+  const [hours, minutes] = time24.split(":");
+  let h = parseInt(hours, 10);
+  const m = parseInt(minutes, 10);
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12;
+  h = h ? h : 12; // the hour '0' should be '12'
+  return `${h}:${m.toString().padStart(2, "0")} ${ampm}`;
+};
+
 const CalendarTab = ({ events, onAdd, onDelete }: CalendarTabProps) => {
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
-  const [time, setTime] = useState("12:00 PM");
+  const [time, setTime] = useState("12:00");
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -63,11 +73,11 @@ const CalendarTab = ({ events, onAdd, onDelete }: CalendarTabProps) => {
       onAdd({
         name,
         date,
-        time: time.trim() || undefined,
+        time: time.trim() ? formatTime12h(time) : undefined,
       });
       setName("");
       setDate("");
-      setTime("12:00 PM");
+      setTime("12:00");
       setIsOpen(false);
     }
   };
@@ -120,9 +130,12 @@ const CalendarTab = ({ events, onAdd, onDelete }: CalendarTabProps) => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="time">Time (Optional)</Label>
-                  <TimePicker
+                  <input
+                    type="time"
+                    id="time"
                     value={time}
-                    onChange={(t) => setTime(t)}
+                    onChange={(e) => setTime(e.target.value)}
+                    className="bg-zinc-900 border border-white/10 text-white w-full h-10 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500/50"
                   />
                 </div>
                 <DialogFooter>
