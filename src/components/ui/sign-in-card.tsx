@@ -41,6 +41,17 @@ export function SignInCard() {
         setIsSignUp(location.pathname === '/signup');
     }, [location.pathname]);
 
+    // Check for existing session or auth state change
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            if (user) {
+                // If we are logged in, go to home
+                navigate("/");
+            }
+        });
+        return () => unsubscribe();
+    }, [navigate]);
+
     // Check for redirect result (mobile auth flow)
     useEffect(() => {
         const checkRedirect = async () => {
@@ -48,14 +59,15 @@ export function SignInCard() {
                 const result = await getRedirectResult(auth);
                 if (result) {
                     toast.success("Signed in with Google successfully!");
-                    navigate("/");
+                    // Navigation will be handled by the onAuthStateChanged effect above
                 }
             } catch (error) {
                 console.error("Redirect auth error", error);
+                toast.error("Failed to sign in via redirect");
             }
         };
         checkRedirect();
-    }, [navigate]);
+    }, []);
 
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
