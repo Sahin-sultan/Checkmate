@@ -100,6 +100,7 @@ const Index = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [tasksCompletedToday, setTasksCompletedToday] = useState(12);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   // Initialize notification system
   useNotificationSystem(tasks, events);
@@ -118,6 +119,7 @@ const Index = () => {
         // Only show toast if it's a fresh login (optional logic could go here)
       } else {
         setUser(null);
+        setIsDataLoaded(true);
       }
     });
     return () => unsubscribe();
@@ -142,10 +144,15 @@ const Index = () => {
           if (data.tasksCompletedToday) setTasksCompletedToday(data.tasksCompletedToday);
 
           toast.success("Data synced from cloud");
+        } else {
+          // New user or no data yet - keep current state but mark as loaded
+          setIsDataLoaded(true);
         }
+        setIsDataLoaded(true);
       } catch (error) {
         console.error("Error loading user data:", error);
         toast.error("Failed to sync data");
+        setIsDataLoaded(true); // Allow editing even if sync fails
       }
     };
 
@@ -189,33 +196,33 @@ const Index = () => {
   // Save to localStorage and Firestore
   useEffect(() => {
     localStorage.setItem("checkmate-habits", JSON.stringify(habits));
-    if (user?.uid) setDoc(doc(db, "users", user.uid), { habits }, { merge: true });
-  }, [habits, user?.uid]);
+    if (user?.uid && isDataLoaded) setDoc(doc(db, "users", user.uid), { habits }, { merge: true });
+  }, [habits, user?.uid, isDataLoaded]);
 
   useEffect(() => {
     localStorage.setItem("checkmate-tasks", JSON.stringify(tasks));
-    if (user?.uid) setDoc(doc(db, "users", user.uid), { tasks }, { merge: true });
-  }, [tasks, user?.uid]);
+    if (user?.uid && isDataLoaded) setDoc(doc(db, "users", user.uid), { tasks }, { merge: true });
+  }, [tasks, user?.uid, isDataLoaded]);
 
   useEffect(() => {
     localStorage.setItem("checkmate-tasks-completed", JSON.stringify(tasksCompletedToday));
-    if (user?.uid) setDoc(doc(db, "users", user.uid), { tasksCompletedToday }, { merge: true });
-  }, [tasksCompletedToday, user?.uid]);
+    if (user?.uid && isDataLoaded) setDoc(doc(db, "users", user.uid), { tasksCompletedToday }, { merge: true });
+  }, [tasksCompletedToday, user?.uid, isDataLoaded]);
 
   useEffect(() => {
     localStorage.setItem("checkmate-goals", JSON.stringify(goals));
-    if (user?.uid) setDoc(doc(db, "users", user.uid), { goals }, { merge: true });
-  }, [goals, user?.uid]);
+    if (user?.uid && isDataLoaded) setDoc(doc(db, "users", user.uid), { goals }, { merge: true });
+  }, [goals, user?.uid, isDataLoaded]);
 
   useEffect(() => {
     localStorage.setItem("checkmate-events", JSON.stringify(events));
-    if (user?.uid) setDoc(doc(db, "users", user.uid), { events }, { merge: true });
-  }, [events, user?.uid]);
+    if (user?.uid && isDataLoaded) setDoc(doc(db, "users", user.uid), { events }, { merge: true });
+  }, [events, user?.uid, isDataLoaded]);
 
   useEffect(() => {
     localStorage.setItem("checkmate-transactions", JSON.stringify(transactions));
-    if (user?.uid) setDoc(doc(db, "users", user.uid), { transactions }, { merge: true });
-  }, [transactions, user?.uid]);
+    if (user?.uid && isDataLoaded) setDoc(doc(db, "users", user.uid), { transactions }, { merge: true });
+  }, [transactions, user?.uid, isDataLoaded]);
 
   useEffect(() => {
     if (user) {
