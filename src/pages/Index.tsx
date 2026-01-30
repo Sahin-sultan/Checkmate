@@ -48,6 +48,7 @@ interface Event {
 }
 
 interface User {
+  uid: string;
   name: string;
   email: string;
   avatar?: string;
@@ -108,6 +109,7 @@ const Index = () => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser({
+          uid: currentUser.uid,
           name: currentUser.displayName || currentUser.email?.split('@')[0] || 'User',
           email: currentUser.email || '',
           avatar: currentUser.photoURL || undefined
@@ -120,6 +122,35 @@ const Index = () => {
     });
     return () => unsubscribe();
   }, []);
+
+  // Load User Data from Firestore
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!user?.uid) return;
+
+      try {
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.habits) setHabits(data.habits);
+          if (data.tasks) setTasks(data.tasks);
+          if (data.goals) setGoals(data.goals);
+          if (data.events) setEvents(data.events);
+          if (data.transactions) setTransactions(data.transactions);
+          if (data.tasksCompletedToday) setTasksCompletedToday(data.tasksCompletedToday);
+
+          toast.success("Data synced from cloud");
+        }
+      } catch (error) {
+        console.error("Error loading user data:", error);
+        toast.error("Failed to sync data");
+      }
+    };
+
+    loadUserData();
+  }, [user?.uid]);
 
   // Load from localStorage
   useEffect(() => {
@@ -155,30 +186,36 @@ const Index = () => {
     localStorage.setItem("checkmate-active-tab", activeTab);
   }, [activeTab]);
 
-  // Save to localStorage
+  // Save to localStorage and Firestore
   useEffect(() => {
     localStorage.setItem("checkmate-habits", JSON.stringify(habits));
-  }, [habits]);
+    if (user?.uid) setDoc(doc(db, "users", user.uid), { habits }, { merge: true });
+  }, [habits, user?.uid]);
 
   useEffect(() => {
     localStorage.setItem("checkmate-tasks", JSON.stringify(tasks));
-  }, [tasks]);
+    if (user?.uid) setDoc(doc(db, "users", user.uid), { tasks }, { merge: true });
+  }, [tasks, user?.uid]);
 
   useEffect(() => {
     localStorage.setItem("checkmate-tasks-completed", JSON.stringify(tasksCompletedToday));
-  }, [tasksCompletedToday]);
+    if (user?.uid) setDoc(doc(db, "users", user.uid), { tasksCompletedToday }, { merge: true });
+  }, [tasksCompletedToday, user?.uid]);
 
   useEffect(() => {
     localStorage.setItem("checkmate-goals", JSON.stringify(goals));
-  }, [goals]);
+    if (user?.uid) setDoc(doc(db, "users", user.uid), { goals }, { merge: true });
+  }, [goals, user?.uid]);
 
   useEffect(() => {
     localStorage.setItem("checkmate-events", JSON.stringify(events));
-  }, [events]);
+    if (user?.uid) setDoc(doc(db, "users", user.uid), { events }, { merge: true });
+  }, [events, user?.uid]);
 
   useEffect(() => {
     localStorage.setItem("checkmate-transactions", JSON.stringify(transactions));
-  }, [transactions]);
+    if (user?.uid) setDoc(doc(db, "users", user.uid), { transactions }, { merge: true });
+  }, [transactions, user?.uid]);
 
   useEffect(() => {
     if (user) {
@@ -192,6 +229,16 @@ const Index = () => {
     try {
       await signOut(auth);
       setUser(null);
+
+      // Reset to initial state immediately
+      setHabits(initialHabits);
+      setTasks(initialTasks);
+      setGoals(initialGoals);
+      setEvents(initialEvents);
+      setTransactions([]);
+      setTasksCompletedToday(12);
+      setActiveTab("dashboard");
+
       toast.success("Logged out successfully");
     } catch (error) {
       console.error("Logout error", error);
