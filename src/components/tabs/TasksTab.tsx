@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TimePicker } from "@/components/ui/time-picker";
 import { useState } from "react";
 
 interface Task {
@@ -61,7 +62,7 @@ const item = {
 
 const TasksTab = ({ tasks, onToggle, onAdd, onDelete }: TasksTabProps) => {
   const [newTaskName, setNewTaskName] = useState("");
-  const [dueTime, setDueTime] = useState("");
+  const [dueTime, setDueTime] = useState("12:00 PM");
   const [priority, setPriority] = useState<"high" | "medium" | "low">("medium");
   const [isOpen, setIsOpen] = useState(false);
 
@@ -74,7 +75,7 @@ const TasksTab = ({ tasks, onToggle, onAdd, onDelete }: TasksTabProps) => {
         priority,
       });
       setNewTaskName("");
-      setDueTime("");
+      setDueTime("12:00 PM");
       setPriority("medium");
       setIsOpen(false);
     }
@@ -118,12 +119,9 @@ const TasksTab = ({ tasks, onToggle, onAdd, onDelete }: TasksTabProps) => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="due-time">Due Time</Label>
-                  <Input
-                    id="due-time"
+                  <TimePicker
                     value={dueTime}
-                    onChange={(e) => setDueTime(e.target.value)}
-                    placeholder="e.g., 2:00 PM"
-                    className="bg-zinc-900 border-white/10 text-white"
+                    onChange={(t) => setDueTime(t)}
                   />
                 </div>
                 <div className="space-y-2">
