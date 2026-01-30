@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { TimePicker } from "@/components/ui/time-picker";
 import { useState } from "react";
 
 interface Event {
@@ -53,7 +54,7 @@ const item = {
 const CalendarTab = ({ events, onAdd, onDelete }: CalendarTabProps) => {
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+  const [time, setTime] = useState("12:00 PM");
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -66,7 +67,7 @@ const CalendarTab = ({ events, onAdd, onDelete }: CalendarTabProps) => {
       });
       setName("");
       setDate("");
-      setTime("");
+      setTime("12:00 PM");
       setIsOpen(false);
     }
   };
@@ -119,12 +120,9 @@ const CalendarTab = ({ events, onAdd, onDelete }: CalendarTabProps) => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="time">Time (Optional)</Label>
-                  <Input
-                    id="time"
+                  <TimePicker
                     value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    placeholder="e.g., 10:00 AM"
-                    className="bg-zinc-900 border-white/10 text-white"
+                    onChange={(t) => setTime(t)}
                   />
                 </div>
                 <DialogFooter>
