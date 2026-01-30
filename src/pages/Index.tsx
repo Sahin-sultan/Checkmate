@@ -11,6 +11,11 @@ import CalendarTab from "@/components/tabs/CalendarTab";
 import StatsTab from "@/components/tabs/StatsTab";
 import FinanceTab, { Transaction } from "@/components/tabs/FinanceTab";
 import { GlowCard } from "@/components/ui/spotlight-card";
+import { useNotificationSystem } from "@/hooks/useNotificationSystem";
+import { auth, db } from "@/lib/firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { toast } from "sonner";
 
 interface Habit {
   id: string;
@@ -95,6 +100,27 @@ const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [tasksCompletedToday, setTasksCompletedToday] = useState(12);
 
+  // Initialize notification system
+  useNotificationSystem(tasks, events);
+
+  // Listen for auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser({
+          name: currentUser.displayName || currentUser.email?.split('@')[0] || 'User',
+          email: currentUser.email || '',
+          avatar: currentUser.photoURL || undefined
+        });
+
+        // Only show toast if it's a fresh login (optional logic could go here)
+      } else {
+        setUser(null);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
   // Load from localStorage
   useEffect(() => {
     const savedHabits = localStorage.getItem("checkmate-habits");
@@ -113,7 +139,15 @@ const Index = () => {
     if (savedGoals) setGoals(JSON.parse(savedGoals));
     if (savedEvents) setEvents(JSON.parse(savedEvents));
     if (savedTransactions) setTransactions(JSON.parse(savedTransactions));
-    if (savedUser) setUser(JSON.parse(savedUser));
+
+    // Load user from local storage while Firebase initializes to prevent flicker
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        console.error("Failed to parse saved user", e);
+      }
+    }
   }, []);
 
   // Save activeTab to localStorage
@@ -154,12 +188,15 @@ const Index = () => {
     }
   }, [user]);
 
-  const handleLogin = (newUser: { name: string; email: string }) => {
-    setUser(newUser);
-  };
-
-  const handleLogout = () => {
-    setUser(null);
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      toast.success("Logged out successfully");
+    } catch (error) {
+      console.error("Logout error", error);
+      toast.error("Failed to log out");
+    }
   };
 
   const handleAddTransaction = (transaction: Omit<Transaction, "id">) => {
@@ -301,9 +338,46 @@ const Index = () => {
     }
   };
 
+  // Swipe Logic
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null); // Reset
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe || isRightSwipe) {
+      const currentIndex = navItems.findIndex(item => item.id === activeTab);
+      if (isLeftSwipe && currentIndex < navItems.length - 1) {
+        setActiveTab(navItems[currentIndex + 1].id);
+      }
+      if (isRightSwipe && currentIndex > 0) {
+        setActiveTab(navItems[currentIndex - 1].id);
+      }
+    }
+  };
+
   return (
-    <div className="min-h-screen pb-24">
-      <Header activeTab={activeTab} onTabChange={setActiveTab} user={user} onLogin={handleLogin} onLogout={handleLogout} />
+    <div
+      className="min-h-screen pb-24 touch-pan-y"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
+      <Header activeTab={activeTab} onTabChange={setActiveTab} user={user} onLogout={handleLogout} />
 
       {/* Replaced Navigation with NavBar */}
       <NavBar
@@ -311,8 +385,6 @@ const Index = () => {
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
-
-
 
       <main className="mx-auto max-w-7xl px-4 md:px-12 pb-12">
         <GlowCard
@@ -333,10 +405,10 @@ const Index = () => {
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
-                initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.98 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
+                initial={{ opacity: 0, x: 10, scale: 0.98 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: -10, scale: 0.98 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
                 className="w-full h-full"
               >
                 {renderTabContent()}
