@@ -1,4 +1,5 @@
 import { Calendar, Trash2, CalendarPlus } from "lucide-react";
+import { useState } from "react";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { downloadICS } from "@/utils/calendarUtils";
 
@@ -17,6 +18,10 @@ interface EventsCardProps {
 }
 
 const EventsCard = ({ events, onDelete, delay = 0, fullWidth = false }: EventsCardProps) => {
+  const [visibleCount, setVisibleCount] = useState(10);
+  const visibleEvents = events.slice(0, visibleCount);
+  const hasMore = visibleEvents.length < events.length;
+
   return (
     <div
       className={`card-earthy p-6 relative overflow-hidden ${fullWidth ? 'col-span-full' : ''}`}
@@ -38,7 +43,7 @@ const EventsCard = ({ events, onDelete, delay = 0, fullWidth = false }: EventsCa
         </div>
 
         <div className="space-y-3">
-          {events.map((event) => (
+          {visibleEvents.map((event) => (
             <div
               key={event.id}
               className="rounded-lg border border-white/5 p-4 transition-all duration-300 hover:translate-x-1 hover:bg-white/5 group relative"
@@ -82,6 +87,17 @@ const EventsCard = ({ events, onDelete, delay = 0, fullWidth = false }: EventsCa
             </div>
           ))}
         </div>
+
+        {hasMore && (
+          <div className="mt-4 flex justify-center">
+            <button
+              onClick={() => setVisibleCount(prev => prev + 10)}
+              className="text-sm text-primary hover:text-primary-hover font-medium hover:underline transition-all"
+            >
+              Show More
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
