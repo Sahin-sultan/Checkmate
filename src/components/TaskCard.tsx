@@ -27,6 +27,9 @@ const priorityStyles = {
 };
 
 const TaskCard = ({ tasks, onToggle, onDelete, delay = 0, fullWidth = false }: TaskCardProps) => {
+  const [visibleCount, setVisibleCount] = useState(10);
+  const visibleTasks = tasks.slice(0, visibleCount);
+  const hasMore = visibleTasks.length < tasks.length;
   const [confetti, setConfetti] = useState<{ x: number; y: number } | null>(null);
   const [celebratingId, setCelebratingId] = useState<string | null>(null);
 
@@ -61,7 +64,7 @@ const TaskCard = ({ tasks, onToggle, onDelete, delay = 0, fullWidth = false }: T
         </div>
 
         <div className="space-y-3">
-          {tasks.map((task) => (
+          {visibleTasks.map((task) => (
             <div
               key={task.id}
               className={`task-item ${priorityStyles[task.priority]} ${celebratingId === task.id ? 'celebrate' : ''}`}
@@ -96,6 +99,17 @@ const TaskCard = ({ tasks, onToggle, onDelete, delay = 0, fullWidth = false }: T
             </div>
           ))}
         </div>
+
+        {hasMore && (
+          <div className="mt-4 flex justify-center">
+            <button
+              onClick={() => setVisibleCount(prev => prev + 10)}
+              className="text-sm text-primary hover:text-primary-hover font-medium hover:underline transition-all"
+            >
+              Show More
+            </button>
+          </div>
+        )}
 
         {confetti && (
           <Confetti
