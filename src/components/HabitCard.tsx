@@ -20,6 +20,10 @@ interface HabitCardProps {
 }
 
 const HabitCard = ({ habits, onToggle, onDelete, delay = 0, fullWidth = false }: HabitCardProps) => {
+  const [visibleCount, setVisibleCount] = useState(10);
+  const visibleHabits = habits.slice(0, visibleCount);
+  const hasMore = visibleHabits.length < habits.length;
+
   const [confetti, setConfetti] = useState<{ x: number; y: number } | null>(null);
   const [celebratingId, setCelebratingId] = useState<string | null>(null);
 
@@ -54,7 +58,7 @@ const HabitCard = ({ habits, onToggle, onDelete, delay = 0, fullWidth = false }:
         </div>
 
         <div className="space-y-3">
-          {habits.map((habit) => (
+          {visibleHabits.map((habit) => (
             <div
               key={habit.id}
               className={`habit-item ${celebratingId === habit.id ? 'celebrate' : ''}`}
@@ -92,6 +96,17 @@ const HabitCard = ({ habits, onToggle, onDelete, delay = 0, fullWidth = false }:
             </div>
           ))}
         </div>
+
+        {hasMore && (
+          <div className="mt-4 flex justify-center">
+            <button
+              onClick={() => setVisibleCount(prev => prev + 10)}
+              className="text-sm text-primary hover:text-primary-hover font-medium hover:underline transition-all"
+            >
+              Show More
+            </button>
+          </div>
+        )}
 
         {confetti && (
           <Confetti
