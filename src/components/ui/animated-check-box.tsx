@@ -136,49 +136,7 @@ const NeonCheckbox: React.FC<NeonCheckboxProps> = ({
             )}
 
             {/* Add keyframes as a style tag */}
-            <style>{`
-        @keyframes borderFlow1 {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(200%); }
-        }
-        @keyframes borderFlow2 {
-          0% { transform: translateY(0); }
-          100% { transform: translateY(200%); }
-        }
-        @keyframes borderFlow3 {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-200%); }
-        }
-        @keyframes borderFlow4 {
-          0% { transform: translateY(0); }
-          100% { transform: translateY(-200%); }
-        }
-        @keyframes particleExplosion {
-          0% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
-          20% { opacity: 1; }
-          100% { 
-            transform: translate(
-              calc(-50% + var(--x, 20px)),
-              calc(-50% + var(--y, 20px))
-            ) scale(0);
-            opacity: 0;
-          }
-        }
-        @keyframes ringPulse {
-          0% { transform: scale(0); opacity: 1; }
-          100% { transform: scale(2); opacity: 0; }
-        }
-        @keyframes sparkFlash {
-          0% { 
-            transform: rotate(var(--r, 0deg)) translateX(0) scale(1);
-            opacity: 1;
-          }
-          100% {
-            transform: rotate(var(--r, 0deg)) translateX(30px) scale(0);
-            opacity: 0;
-          }
-        }
-      `}</style>
+
         </label>
     );
 };
